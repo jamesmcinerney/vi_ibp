@@ -8,8 +8,8 @@ Created on May 26, 2015
 
 import numpy as np
 import random
-from ibp.gen import genData
-from ibp.plot import plot_grid
+from inf.gen import genData
+from inf.plot import plot_grid
 from scipy.special import psi
 import sys
 import os
@@ -24,8 +24,8 @@ d1,d2 = 4,4
 D = d1*d2
 Kgrnd = 8
 grnd,X = genData(N,Kgrnd,d1,d2)
-plot_grid(grnd,d1,d2)
-plot_grid(X[1:25,:],d1,d2)
+plot_grid(grnd,d1,d2,title0='Ground Truth Means')
+plot_grid(X[1:25,:],d1,d2,title0='Random Selection of Data')
 
 #set hyperparams:
 K = 15;
@@ -38,12 +38,12 @@ Phi = 0.1 * np.ones((D,D,K));
 phi = np.random.uniform(0,1,(K,D));
 tau = np.random.uniform(0,1,(K,2));
 
-B = 3 #batch size
+B = 100 #batch size
 tau0 = 128 
 kappa = 0.7 
 
-for t in range(100):
-    print 'iteration',t
+for t in range(1000):
+    if t%100==0: print 'iteration',t
     #Sample a minibatch of data
     b = random.sample(range(N),B)
 
@@ -84,4 +84,4 @@ for t in range(100):
     tau = (1-lr)*tau + lr*tau_im
 
 
-plot_grid(phi,d1,d2,final=1)
+plot_grid(phi,d1,d2,final=1,title0='Inferred Means')
