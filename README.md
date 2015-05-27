@@ -1,5 +1,5 @@
 # vi_ibp
-Variational inference for finite Indian Buffet Process
+Variational inference for finite Indian Buffet Processes.
 
 A reimplementation of Matlab code from the following reference, extended to perform stochastic variational inference:
 
