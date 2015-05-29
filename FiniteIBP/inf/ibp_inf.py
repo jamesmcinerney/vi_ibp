@@ -34,7 +34,7 @@ d1,d2 = 168,192
 D = d1*d2
 (N,D1) = np.shape(X)
 assert D1==D
-plot_grid(X[1:25,:],d1,d2,title0='Random Selection of Data',order='F',final=0)
+plot_grid(X[1:25,:],d1,d2,title0='Random Selection of Data',order='F',final=1)
 
 
 
@@ -64,25 +64,34 @@ for t in range(200):
     nu_local = np.random.uniform(0,1,(B,K));
     nu_local = nu_local/nu_local.sum(axis=1)[:,np.newaxis]
     #repeat updates to var params to z until convergence:
-    for t0 in range(10): #todo: include convergence check here
+    v_old, diff, diff_thres = 0., 1., 1e-5
+    t0 = 0
+    for t0 in range(10):
 #         t1=time.time()
-#         A = np.zeros((B,K))
-#         for k in range(K):
-#             A[:,k] = np.dot(phi[k,:], (X[b,:]-np.dot(nu_local,phi)+np.outer(nu_local[:,k],phi[k,:])).T)
-#         v = -(psi(tau[:,0])-psi(tau[:,1])- 0.5/sigma_n**2*(D*Phi+(phi**2).sum(axis=1)) + 1/sigma_n**2*A)
-#         #nu_local = 1./(1+np.exp(v))
+        A = np.zeros((B,K))
+        P = X[b,:]-np.dot(nu_local,phi)
+        for k in range(K):
+            A[:,k] = np.dot(phi[k,:], (P+np.outer(nu_local[:,k],phi[k,:])).T)
+        v = -(psi(tau[:,0])-psi(tau[:,1])- 0.5/sigma_n**2*(D*Phi+(phi**2).sum(axis=1)) + 1/sigma_n**2*A)
+        nu_local = 1./(1+np.exp(v))
 #         t2 = time.time()
 #         print 'fast',t2-t1
-        v1 = np.zeros((B,K))
-        for k in range(K):
-            v1[:,k] = -(psi(tau[k,0])-psi(tau[k,1])- 0.5/sigma_n**2*(D*Phi[k]+np.inner(phi[k,:],phi[k,:])) + \
-                            1/sigma_n**2*np.dot(phi[k,:], (X[b,:]-np.dot(nu_local,phi)+np.outer(nu_local[:,k],phi[k,:])).T))
-            #print 'v',v
-        nu_local = 1./(1+np.exp(v1))
-        #print 'slow',time.time() - t2
-        #print 'v1',v1[:5,:]
-        #print 'v',v[:5,:]
-        #sys.exit(0)
+#         v1 = np.zeros((B,K))
+#         for k in range(K):
+#             v1[:,k] = -(psi(tau[k,0])-psi(tau[k,1])- 0.5/sigma_n**2*(D*Phi[k]+np.inner(phi[k,:],phi[k,:])) + \
+#                             1/sigma_n**2*np.dot(phi[k,:], (X[b,:]-np.dot(nu_local,phi)+np.outer(nu_local[:,k],phi[k,:])).T))
+#             #print 'v',v
+# #         nu_local = 1./(1+np.exp(v1))
+#         print 'slow',time.time() - t2
+#         print 'v1',v1[:5,:]
+#         print 'v',v[:5,:]
+#         sys.exit(0)
+        #check convergence:
+        diff_v = (np.abs(v_old - v)).sum()
+        v_old = v.copy()
+        if diff_v<diff_thres: break
+        t0+=1
+    print 'converged after %i iters'%t0
 
     #------- GLOBAL UPDATES ---------
     
@@ -109,4 +118,5 @@ for t in range(200):
     tau = (1-lr)*tau + lr*tau_im
 
 
-plot_grid(phi,d1,d2,final=1,title0='Inferred Means')
+np.save('/Users/James/phi',phi)
+plot_grid(phi,d1,d2,final=1,title0='Inferred Means',order='F')
